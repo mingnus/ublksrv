@@ -535,6 +535,7 @@ int main(int argc, char *argv[])
 		{ "need_get_data",	1,	NULL, 'g' },
 		{ "backing_file",	1,	NULL, 'f' },
 		{ "use_aio",		1,	NULL, 'a' },
+		{ "debug_mask",		1,	NULL, 0 },
 		{ NULL }
 	};
 	struct ublksrv_dev_data data = {
@@ -548,9 +549,11 @@ int main(int argc, char *argv[])
 	};
 	struct ublksrv_ctrl_dev *dev;
 	int ret, opt;
+	int option_index = 0;
+	unsigned int debug_mask = 0;
 
 	while ((opt = getopt_long(argc, argv, "f:ga",
-				  longopts, NULL)) != -1) {
+				  longopts, &option_index)) != -1) {
 		switch (opt) {
 		case 'g':
 			data.flags |= UBLK_F_NEED_GET_DATA;
@@ -563,9 +566,14 @@ int main(int argc, char *argv[])
 		case 'a':
 			use_aio = true;
 			break;
+		case 0:
+			if (!strcmp(longopts[option_index].name, "debug_mask"))
+				debug_mask = strtol(optarg, NULL, 16);
+			break;
 		}
 	}
 
+	ublk_set_debug_mask(debug_mask);
 	if (backing_fd < 0)
 		use_aio = false;
 
